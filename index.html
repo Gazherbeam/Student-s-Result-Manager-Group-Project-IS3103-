@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Student Result Manager for recording marks and viewing grades.">
+  <title>Student Result Manager</title>
+  <style>
+    :root {
+      --ink: #17242b;
+      --muted: #718087;
+      --paper: #f5f7f2;
+      --white: #ffffff;
+      --line: #dfe6df;
+      --teal: #1d7068;
+      --teal-dark: #15534e;
+      --mint: #dcefe8;
+      --yellow: #f6c85f;
+      --yellow-soft: #fff3cf;
+      --red: #c45b53;
+      --shadow: 0 18px 50px rgba(23, 36, 43, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      padding: 32px 22px;
+      color: #f4fbf7;
+      background: var(--teal-dark);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 56px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      color: var(--teal-dark);
+      background: var(--yellow);
+      border-radius: 12px 12px 12px 3px;
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .brand-name span {
+      display: block;
+      color: #a6d2c6;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .nav-label {
+      margin: 0 0 12px 12px;
+      color: #91c0b5;
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 12px;
+      color: #c8e3db;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--teal-dark);
+      background: #eff8f3;
+      font-weight: 700;
+    }
+
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      padding: 18px;
+      color: #d8eee7;
+      background: rgba(4, 32, 30, 0.24);
+      border: 1px solid rgba(213, 241, 232, 0.13);
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .sidebar-note strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--yellow);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .main-content {
+      width: min(100%, 1440px);
+      padding: 44px clamp(24px, 5vw, 72px) 60px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 42px;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--teal);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 600px;
+      margin-bottom: 10px;
+      font-size: clamp(34px, 4vw, 56px);
+      font-weight: 400;
+      letter-spacing: -0.055em;
+      line-height: 0.98;
+    }
+
+    .intro {
+      max-width: 520px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .date-stamp {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      color: var(--muted);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .date-stamp::before {
+      width: 7px;
+      height: 7px;
+      background: var(--yellow);
+      border-radius: 50%;
+      content: '';
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .summary-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 126px;
+      padding: 22px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card::after {
+      position: absolute;
+      right: -24px;
+      bottom: -29px;
+      width: 92px;
+      height: 92px;
+      border: 14px solid var(--mint);
+      border-radius: 50%;
+      content: '';
+    }
+
+    .summary-card.highlight {
+      background: var(--yellow-soft);
+      border-color: #f2dfaa;
+    }
+
+    .summary-card.highlight::after {
+      border-color: rgba(246, 200, 95, 0.34);
+    }
+
+    .summary-label {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      position: relative;
+      z-index: 1;
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.75fr) minmax(430px, 1.5fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      margin-bottom: 4px;
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-subtitle {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    .form-body {
+      display: grid;
+      gap: 18px;
+      padding: 24px;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field-group label {
+      color: #4a5a60;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      height: 44px;
+      padding: 0 13px;
+      color: var(--ink);
+      background: #fbfcfa;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      outline: none;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(29, 112, 104, 0.12);
+    }
+
+    .subjects-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      padding-bottom: 2px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .subjects-heading span {
+      color: var(--teal);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .max-marks {
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+    }
+
+    .subject-row {
+      display: grid;
+      grid-template-columns: 1fr 92px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .subject-row label {
+      color: var(--ink);
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .subject-row input {
+      height: 38px;
+      text-align: right;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .button {
+      min-height: 44px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .button-primary {
+      color: #fff;
+      background: var(--teal);
+    }
+
+    .button-primary:hover {
+      background: var(--teal-dark);
+    }
+
+    .button-secondary {
+      color: var(--teal-dark);
+      background: var(--mint);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .results-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 24px;
+      background: #fbfcfa;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .record-count {
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    .filter-button {
+      padding: 7px 10px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 590px;
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+    }
+
+    th,
+    td {
+      padding: 16px 13px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    th:first-child,
+    td:first-child {
+      padding-left: 24px;
+    }
+
+    th:last-child,
+    td:last-child {
+      padding-right: 24px;
+    }
+
+    td {
+      color: #4d5b60;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .student-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      place-items: center;
+      color: var(--teal-dark);
+      background: var(--mint);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .grade {
+      display: inline-flex;
+      min-width: 29px;
+      justify-content: center;
+      padding: 5px 8px;
+      color: var(--teal-dark);
+      background: var(--mint);
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .grade.warning {
+      color: #986b08;
+      background: var(--yellow-soft);
+    }
+
+    .grade.fail {
+      color: #a4423b;
+      background: #fbe5e1;
+    }
+
+    .action-set {
+      display: flex;
+      gap: 8px;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .icon-button {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    .icon-button.delete {
+      color: var(--red);
+    }
+
+    .icon-button.bonus {
+      color: #a8780a;
+      background: var(--yellow-soft);
+      border-color: #f2dfaa;
+    }
+
+    .empty-state {
+      display: none;
+      padding: 40px 24px;
+      color: var(--muted);
+      text-align: center;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    dialog {
+      width: min(390px, calc(100% - 32px));
+      padding: 0;
+      color: var(--ink);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 24px 80px rgba(23, 36, 43, 0.22);
+    }
+
+    dialog::backdrop {
+      background: rgba(23, 36, 43, 0.42);
+    }
+
+    .dialog-body {
+      display: grid;
+      gap: 16px;
+      padding: 24px;
+    }
+
+    .dialog-title {
+      margin-bottom: 4px;
+      font-size: 23px;
+      font-weight: 400;
+    }
+
+    .dialog-copy {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    @media (max-width: 1050px) {
+      .app-shell {
+        grid-template-columns: 205px minmax(0, 1fr);
+      }
+
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .app-shell {
+        display: block;
+      }
+
+      .sidebar {
+        padding: 18px 20px;
+      }
+
+      .brand {
+        margin-bottom: 20px;
+      }
+
+      .nav-label,
+      .sidebar-note {
+        display: none;
+      }
+
+      .nav-list {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+      }
+
+      .nav-item {
+        flex: 0 0 auto;
+        padding: 10px 12px;
+      }
+
+      .main-content {
+        padding: 32px 18px 44px;
+      }
+
+      .topbar {
+        display: block;
+        margin-bottom: 30px;
+      }
+
+      .date-stamp {
+        display: inline-flex;
+        margin-top: 20px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      .summary-card {
+        min-height: 104px;
+      }
+
+      .panel-header,
+      .form-body {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .results-toolbar {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="Resultly home">
+        <span class="brand-mark">R</span>
+        <span class="brand-name">Resultly<span>student records</span></span>
+      </a>
+
+      <p class="nav-label">Workspace</p>
+      <nav aria-label="Main navigation">
+        <ul class="nav-list">
+          <li><a class="nav-item active" href="#results"><span class="nav-icon">▦</span>Overview</a></li>
+          <li><a class="nav-item" href="#add-result"><span class="nav-icon">＋</span>Add result</a></li>
+          <li><a class="nav-item" href="#results"><span class="nav-icon">≡</span>All records</a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-note">
+        <strong>Quick note</strong>
+        Keep each student's marks in one place and let the grade tell the story.
+      </div>
+    </aside>
+
+    <main class="main-content" id="top">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Academic overview</p>
+          <h1>Student results,<br>made clear.</h1>
+          <p class="intro">Record subject marks, review performance, and keep every result easy to find.</p>
+        </div>
+        <div class="date-stamp">Term 01 · 2024 / 25</div>
+      </header>
+
+      <section class="summary-grid" aria-label="Result summary">
+        <article class="summary-card">
+          <p class="summary-label">Total students</p>
+          <div class="summary-value" id="total-students">0</div>
+        </article>
+        <article class="summary-card highlight">
+          <p class="summary-label">Class average</p>
+          <div class="summary-value" id="class-average">0%</div>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Pass rate</p>
+          <div class="summary-value" id="pass-rate">0%</div>
+        </article>
+      </section>
+
+      <section class="workspace-grid" aria-label="Student result workspace">
+        <article class="panel" id="add-result">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title" id="form-title">Add a result</h2>
+              <p class="panel-subtitle">Enter marks out of 100</p>
+            </div>
+            <span aria-hidden="true">✦</span>
+          </div>
+
+          <form class="form-body" id="result-form">
+            <div class="field-group">
+              <label for="student-name">Student name</label>
+              <input id="student-name" name="student-name" type="text" placeholder="e.g. Amina Yusuf">
+            </div>
+
+            <div class="field-group">
+              <label for="student-id">Student ID</label>
+              <input id="student-id" name="student-id" type="text" placeholder="e.g. STU-024">
+            </div>
+
+            <div class="subjects-heading">
+              <span>Subject marks</span>
+              <span class="max-marks">Max 100</span>
+            </div>
+
+            <div class="subject-row">
+              <label for="mathematics">Mathematics</label>
+              <input id="mathematics" name="mathematics" type="number" min="0" max="100" placeholder="00">
+            </div>
+            <div class="subject-row">
+              <label for="english">English</label>
+              <input id="english" name="english" type="number" min="0" max="100" placeholder="00">
+            </div>
+            <div class="subject-row">
+              <label for="science">Science</label>
+              <input id="science" name="science" type="number" min="0" max="100" placeholder="00">
+            </div>
+            <div class="subject-row">
+              <label for="history">History</label>
+              <input id="history" name="history" type="number" min="0" max="100" placeholder="00">
+            </div>
+
+            <div class="button-row">
+              <button class="button button-primary" id="save-button" type="submit">Save result</button>
+              <button class="button button-secondary" type="reset">Clear</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel" id="results">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Recent results</h2>
+              <p class="panel-subtitle">Latest student records</p>
+            </div>
+            <span class="record-count" id="record-count">0 records</span>
+          </div>
+
+          <div class="results-toolbar">
+            <span class="record-count" id="showing-count">Showing 0 students</span>
+            <select class="filter-button" id="grade-filter" aria-label="Filter by grade">
+              <option value="all">All grades</option>
+              <option value="A">Grade A</option>
+              <option value="B">Grade B</option>
+              <option value="C">Grade C</option>
+              <option value="D">Grade D</option>
+              <option value="F">Grade F</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Student</th>
+                  <th scope="col">Total</th>
+                  <th scope="col">Average</th>
+                  <th scope="col">Grade</th>
+                  <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="results-body"></tbody>
+            </table>
+            <p class="empty-state">No student results to display yet.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <dialog id="bonus-dialog" aria-labelledby="bonus-title">
+    <form class="dialog-body" id="bonus-form" method="dialog">
+      <div>
+        <h2 class="dialog-title" id="bonus-title">Add bonus points</h2>
+        <p class="dialog-copy" id="bonus-copy">These points will be added to every subject, up to the maximum of 100.</p>
+      </div>
+      <div class="field-group">
+        <label for="bonus-points">Points per subject</label>
+        <input id="bonus-points" type="number" min="0.1" max="100" step="0.1" value="2" required>
+      </div>
+      <div class="dialog-actions">
+        <button class="button button-secondary" id="cancel-bonus" type="button">Cancel</button>
+        <button class="button button-primary" type="submit">Apply bonus</button>
+      </div>
+    </form>
+  </dialog>
+  <script>
+    const storageKey = 'resultly-students';
+    const subjects = ['mathematics', 'english', 'science', 'history'];
+    const resultForm = document.getElementById('result-form');
+    const resultsBody = document.getElementById('results-body');
+    const emptyState = document.querySelector('.empty-state');
+    const gradeFilter = document.getElementById('grade-filter');
+    const bonusDialog = document.getElementById('bonus-dialog');
+    const bonusForm = document.getElementById('bonus-form');
+    const bonusPoints = document.getElementById('bonus-points');
+    let bonusStudentId = null;
+    let editingId = null;
+    let students = loadStudents();
+
+    function createId() {
+      return window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    }
+
+    function loadStudents() {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          localStorage.removeItem(storageKey);
+        }
+      }
+
+      return [
+        { id: createId(), name: 'Amina Yusuf', studentId: 'STU-001', marks: { mathematics: 94, english: 91, science: 92, history: 91 }, bonus: 0 },
+        { id: createId(), name: 'Brian Otieno', studentId: 'STU-002', marks: { mathematics: 82, english: 80, science: 81, history: 81 }, bonus: 0 },
+        { id: createId(), name: 'Chloe Njeri', studentId: 'STU-003', marks: { mathematics: 72, english: 70, science: 73, history: 71 }, bonus: 0 },
+        { id: createId(), name: 'Daniel Mwangi', studentId: 'STU-004', marks: { mathematics: 56, english: 54, science: 57, history: 57 }, bonus: 0 }
+      ];
+    }
+
+    function saveStudents() {
+      localStorage.setItem(storageKey, JSON.stringify(students));
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[character]));
+    }
+
+    function getAverage(student) {
+      return subjects.reduce((total, subject) => total + Number(student.marks[subject] || 0), 0) / subjects.length;
+    }
+
+    function getGrade(average) {
+      if (average >= 90) return 'A';
+      if (average >= 80) return 'B';
+      if (average >= 70) return 'C';
+      if (average >= 50) return 'D';
+      return 'F';
+    }
+
+    function formatPercent(value) {
+      return `${Number(value.toFixed(1))}%`;
+    }
+
+    function getInitials(name) {
+      return name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function render() {
+      const selectedGrade = gradeFilter.value;
+      const filteredStudents = students.filter(student => selectedGrade === 'all' || getGrade(getAverage(student)) === selectedGrade);
+      const totalMarks = students.reduce((total, student) => total + getAverage(student), 0);
+      const passedStudents = students.filter(student => getAverage(student) >= 50).length;
+
+      document.getElementById('total-students').textContent = students.length;
+      document.getElementById('class-average').textContent = students.length ? formatPercent(totalMarks / students.length) : '0%';
+      document.getElementById('pass-rate').textContent = students.length ? formatPercent((passedStudents / students.length) * 100) : '0%';
+      document.getElementById('record-count').textContent = `${students.length} ${students.length === 1 ? 'record' : 'records'}`;
+      document.getElementById('showing-count').textContent = `Showing ${filteredStudents.length} of ${students.length} students`;
+      emptyState.style.display = filteredStudents.length ? 'none' : 'block';
+
+      resultsBody.innerHTML = filteredStudents.map(student => {
+        const average = getAverage(student);
+        const grade = getGrade(average);
+        const total = subjects.reduce((sum, subject) => sum + Number(student.marks[subject] || 0), 0);
+        const gradeClass = grade === 'A' || grade === 'B' ? '' : grade === 'C' ? ' warning' : ' fail';
+        const bonusLabel = student.bonus ? `, ${student.bonus} bonus points applied` : '';
+
+        return `<tr>
+          <td><div class="student-cell"><span class="avatar">${escapeHtml(getInitials(student.name))}</span>${escapeHtml(student.name)}</div></td>
+          <td>${total} / 400${student.bonus ? ` <small title="${student.bonus} bonus points applied">✦</small>` : ''}</td>
+          <td>${formatPercent(average)}</td>
+          <td><span class="grade${gradeClass}">${grade}</span></td>
+          <td><div class="action-set"><button class="icon-button" type="button" data-action="edit" data-id="${student.id}" aria-label="Edit ${escapeHtml(student.name)}">✎</button><button class="icon-button bonus" type="button" data-action="bonus" data-id="${student.id}" aria-label="Add bonus to ${escapeHtml(student.name)}">★</button><button class="icon-button delete" type="button" data-action="delete" data-id="${student.id}" aria-label="Delete ${escapeHtml(student.name)}">×</button></div></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function resetForm() {
+      resultForm.reset();
+      editingId = null;
+      document.getElementById('form-title').textContent = 'Add a result';
+      document.getElementById('save-button').textContent = 'Save result';
+    }
+
+    resultForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const formData = new FormData(resultForm);
+      const name = formData.get('student-name').trim();
+      const studentId = formData.get('student-id').trim();
+      const marks = Object.fromEntries(subjects.map(subject => [subject, Number(formData.get(subject))]));
+
+      if (!name || !studentId || subjects.some(subject => !Number.isFinite(marks[subject]) || marks[subject] < 0 || marks[subject] > 100)) {
+        alert('Please enter a name, student ID, and marks from 0 to 100 for every subject.');
+        return;
+      }
+
+      if (editingId) {
+        const student = students.find(item => item.id === editingId);
+        Object.assign(student, { name, studentId, marks });
+      } else {
+        students.unshift({ id: createId(), name, studentId, marks, bonus: 0 });
+      }
+
+      saveStudents();
+      resetForm();
+      render();
+    });
+
+    resultForm.addEventListener('reset', () => {
+      setTimeout(resetForm, 0);
+    });
+
+    resultsBody.addEventListener('click', event => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const student = students.find(item => item.id === button.dataset.id);
+      if (!student) return;
+
+      if (button.dataset.action === 'delete') {
+        if (!confirm(`Delete ${student.name}'s result?`)) return;
+        students = students.filter(item => item.id !== student.id);
+      }
+
+      if (button.dataset.action === 'edit') {
+        editingId = student.id;
+        document.getElementById('student-name').value = student.name;
+        document.getElementById('student-id').value = student.studentId;
+        subjects.forEach(subject => { document.getElementById(subject).value = student.marks[subject]; });
+        document.getElementById('form-title').textContent = 'Edit result';
+        document.getElementById('save-button').textContent = 'Update result';
+        document.getElementById('add-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (button.dataset.action === 'bonus') {
+        bonusStudentId = student.id;
+        document.getElementById('bonus-copy').textContent = `Add points to every subject for ${student.name}. Scores cannot go above 100.`;
+        bonusPoints.value = '2';
+        bonusDialog.showModal();
+        return;
+      }
+
+      saveStudents();
+      render();
+    });
+
+    bonusForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const amount = Number(bonusPoints.value);
+      const student = students.find(item => item.id === bonusStudentId);
+      if (!student || !Number.isFinite(amount) || amount <= 0) return;
+      subjects.forEach(subject => { student.marks[subject] = Math.min(100, Number(student.marks[subject]) + amount); });
+      student.bonus = Number(student.bonus || 0) + amount;
+      saveStudents();
+      bonusDialog.close();
+      bonusStudentId = null;
+      render();
+    });
+
+    document.getElementById('cancel-bonus').addEventListener('click', () => {
+      bonusDialog.close();
+      bonusStudentId = null;
+    });
+
+    gradeFilter.addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>
