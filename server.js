@@ -10,10 +10,10 @@ const publicFile = path.join(__dirname, 'index.html');
 
 function defaultStudents() {
   return [
-    { id: randomUUID(), name: 'Amina Yusuf', studentId: 'STU-001', marks: { mathematics: 94, english: 91, science: 92, history: 91 }, bonus: 0 },
-    { id: randomUUID(), name: 'Brian Otieno', studentId: 'STU-002', marks: { mathematics: 82, english: 80, science: 81, history: 81 }, bonus: 0 },
-    { id: randomUUID(), name: 'Chloe Njeri', studentId: 'STU-003', marks: { mathematics: 72, english: 70, science: 73, history: 71 }, bonus: 0 },
-    { id: randomUUID(), name: 'Daniel Mwangi', studentId: 'STU-004', marks: { mathematics: 56, english: 54, science: 57, history: 57 }, bonus: 0 }
+    { id: randomUUID(), name: 'Amina Yusuf', studentId: 'STU-001', marks: { attendance: 94, projects: 91, midtermExams: 92, finalExams: 91, quizzes: 93 }, bonus: 0 },
+    { id: randomUUID(), name: 'Brian Otieno', studentId: 'STU-002', marks: { attendance: 82, projects: 80, midtermExams: 81, finalExams: 81, quizzes: 83 }, bonus: 0 },
+    { id: randomUUID(), name: 'Chloe Njeri', studentId: 'STU-003', marks: { attendance: 72, projects: 70, midtermExams: 73, finalExams: 71, quizzes: 74 }, bonus: 0 },
+    { id: randomUUID(), name: 'Daniel Mwangi', studentId: 'STU-004', marks: { attendance: 56, projects: 54, midtermExams: 57, finalExams: 57, quizzes: 55 }, bonus: 0 }
   ];
 }
 

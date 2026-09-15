@@ -745,7 +745,7 @@
         <div>
           <p class="eyebrow">Academic overview</p>
           <h1>Student results,<br>made clear.</h1>
-          <p class="intro">Record subject marks, review performance, and keep every result easy to find.</p>
+          <p class="intro">Record attendance and assessment scores, review performance, and keep every result easy to find.</p>
         </div>
         <div class="date-stamp">Term 01 · 2024 / 25</div>
       </header>
@@ -787,25 +787,29 @@
             </div>
 
             <div class="subjects-heading">
-              <span>Subject marks</span>
+              <span>Assessment scores</span>
               <span class="max-marks">Max 100</span>
             </div>
 
             <div class="subject-row">
-              <label for="mathematics">Mathematics</label>
-              <input id="mathematics" name="mathematics" type="number" min="0" max="100" placeholder="00">
+              <label for="attendance">Attendance</label>
+              <input id="attendance" name="attendance" type="number" min="0" max="100" placeholder="00">
             </div>
             <div class="subject-row">
-              <label for="english">English</label>
-              <input id="english" name="english" type="number" min="0" max="100" placeholder="00">
+              <label for="projects">Projects</label>
+              <input id="projects" name="projects" type="number" min="0" max="100" placeholder="00">
             </div>
             <div class="subject-row">
-              <label for="science">Science</label>
-              <input id="science" name="science" type="number" min="0" max="100" placeholder="00">
+              <label for="midterm-exams">Midterm exams</label>
+              <input id="midterm-exams" name="midterm-exams" type="number" min="0" max="100" placeholder="00">
             </div>
             <div class="subject-row">
-              <label for="history">History</label>
-              <input id="history" name="history" type="number" min="0" max="100" placeholder="00">
+              <label for="final-exams">Final exams</label>
+              <input id="final-exams" name="final-exams" type="number" min="0" max="100" placeholder="00">
+            </div>
+            <div class="subject-row">
+              <label for="quizzes">Quizzes</label>
+              <input id="quizzes" name="quizzes" type="number" min="0" max="100" placeholder="00">
             </div>
 
             <div class="button-row">
@@ -873,7 +877,8 @@
   </dialog>
   <script>
     const storageKey = 'resultly-students';
-    const subjects = ['mathematics', 'english', 'science', 'history'];
+    const assessments = ['attendance', 'projects', 'midtermExams', 'finalExams', 'quizzes'];
+    const assessmentInputs = ['attendance', 'projects', 'midterm-exams', 'final-exams', 'quizzes'];
     const resultForm = document.getElementById('result-form');
     const resultsBody = document.getElementById('results-body');
     const emptyState = document.querySelector('.empty-state');
@@ -892,11 +897,17 @@
 
     function getDefaultStudents() {
       return [
-        { id: createId(), name: 'Amina Yusuf', studentId: 'STU-001', marks: { mathematics: 94, english: 91, science: 92, history: 91 }, bonus: 0 },
-        { id: createId(), name: 'Brian Otieno', studentId: 'STU-002', marks: { mathematics: 82, english: 80, science: 81, history: 81 }, bonus: 0 },
-        { id: createId(), name: 'Chloe Njeri', studentId: 'STU-003', marks: { mathematics: 72, english: 70, science: 73, history: 71 }, bonus: 0 },
-        { id: createId(), name: 'Daniel Mwangi', studentId: 'STU-004', marks: { mathematics: 56, english: 54, science: 57, history: 57 }, bonus: 0 }
+        { id: createId(), name: 'Amina Yusuf', studentId: 'STU-001', marks: { attendance: 94, projects: 91, midtermExams: 92, finalExams: 91, quizzes: 93 }, bonus: 0 },
+        { id: createId(), name: 'Brian Otieno', studentId: 'STU-002', marks: { attendance: 82, projects: 80, midtermExams: 81, finalExams: 81, quizzes: 83 }, bonus: 0 },
+        { id: createId(), name: 'Chloe Njeri', studentId: 'STU-003', marks: { attendance: 72, projects: 70, midtermExams: 73, finalExams: 71, quizzes: 74 }, bonus: 0 },
+        { id: createId(), name: 'Daniel Mwangi', studentId: 'STU-004', marks: { attendance: 56, projects: 54, midtermExams: 57, finalExams: 57, quizzes: 55 }, bonus: 0 }
       ];
+    }
+
+    function normalizeStudent(student) {
+      const values = Object.values(student.marks || {});
+      const marks = Object.fromEntries(assessments.map((assessment, index) => [assessment, Number(student.marks?.[assessment] ?? values[index] ?? 0)]));
+      return { ...student, marks };
     }
 
     async function loadStudents() {
@@ -905,18 +916,18 @@
         if (!response.ok) throw new Error('API unavailable');
         const saved = await response.json();
         localStorage.setItem(storageKey, JSON.stringify(saved));
-        return saved;
+        return saved.map(normalizeStudent);
       } catch (error) {
         const saved = localStorage.getItem(storageKey);
         if (saved) {
           try {
-            return JSON.parse(saved);
+            return JSON.parse(saved).map(normalizeStudent);
           } catch (parseError) {
             localStorage.removeItem(storageKey);
           }
         }
 
-        return getDefaultStudents();
+        return getDefaultStudents().map(normalizeStudent);
       }
     }
 
@@ -939,7 +950,7 @@
     }
 
     function getAverage(student) {
-      return subjects.reduce((total, subject) => total + Number(student.marks[subject] || 0), 0) / subjects.length;
+      return assessments.reduce((total, assessment) => total + Number(student.marks[assessment] || 0), 0) / assessments.length;
     }
 
     function getGrade(average) {
@@ -974,13 +985,13 @@
       resultsBody.innerHTML = filteredStudents.map(student => {
         const average = getAverage(student);
         const grade = getGrade(average);
-        const total = subjects.reduce((sum, subject) => sum + Number(student.marks[subject] || 0), 0);
+        const total = assessments.reduce((sum, assessment) => sum + Number(student.marks[assessment] || 0), 0);
         const gradeClass = grade === 'A' || grade === 'B' ? '' : grade === 'C' ? ' warning' : ' fail';
         const bonusLabel = student.bonus ? `, ${student.bonus} bonus points applied` : '';
 
         return `<tr>
           <td><div class="student-cell"><span class="avatar">${escapeHtml(getInitials(student.name))}</span>${escapeHtml(student.name)}</div></td>
-          <td>${total} / 400${student.bonus ? ` <small title="${student.bonus} bonus points applied">✦</small>` : ''}</td>
+          <td>${total} / 500${student.bonus ? ` <small title="${student.bonus} bonus points applied">✦</small>` : ''}</td>
           <td>${formatPercent(average)}</td>
           <td><span class="grade${gradeClass}">${grade}</span></td>
           <td><div class="action-set"><button class="icon-button" type="button" data-action="edit" data-id="${student.id}" aria-label="Edit ${escapeHtml(student.name)}">✎</button><button class="icon-button bonus" type="button" data-action="bonus" data-id="${student.id}" aria-label="Add bonus to ${escapeHtml(student.name)}">★</button><button class="icon-button delete" type="button" data-action="delete" data-id="${student.id}" aria-label="Delete ${escapeHtml(student.name)}">×</button></div></td>
@@ -1000,10 +1011,10 @@
       const formData = new FormData(resultForm);
       const name = formData.get('student-name').trim();
       const studentId = formData.get('student-id').trim();
-      const marks = Object.fromEntries(subjects.map(subject => [subject, Number(formData.get(subject))]));
+      const marks = Object.fromEntries(assessments.map((assessment, index) => [assessment, Number(formData.get(assessmentInputs[index]))]));
 
-      if (!name || !studentId || subjects.some(subject => !Number.isFinite(marks[subject]) || marks[subject] < 0 || marks[subject] > 100)) {
-        alert('Please enter a name, student ID, and marks from 0 to 100 for every subject.');
+      if (!name || !studentId || assessments.some(assessment => !Number.isFinite(marks[assessment]) || marks[assessment] < 0 || marks[assessment] > 100)) {
+        alert('Please enter a name, student ID, and scores from 0 to 100 for every assessment.');
         return;
       }
 
@@ -1038,7 +1049,7 @@
         editingId = student.id;
         document.getElementById('student-name').value = student.name;
         document.getElementById('student-id').value = student.studentId;
-        subjects.forEach(subject => { document.getElementById(subject).value = student.marks[subject]; });
+        assessments.forEach((assessment, index) => { document.getElementById(assessmentInputs[index]).value = student.marks[assessment]; });
         document.getElementById('form-title').textContent = 'Edit result';
         document.getElementById('save-button').textContent = 'Update result';
         document.getElementById('add-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1062,7 +1073,7 @@
       const amount = Number(bonusPoints.value);
       const student = students.find(item => item.id === bonusStudentId);
       if (!student || !Number.isFinite(amount) || amount <= 0) return;
-      subjects.forEach(subject => { student.marks[subject] = Math.min(100, Number(student.marks[subject]) + amount); });
+      assessments.forEach(assessment => { student.marks[assessment] = Math.min(100, Number(student.marks[assessment]) + amount); });
       student.bonus = Number(student.bonus || 0) + amount;
       await saveStudents();
       bonusDialog.close();
