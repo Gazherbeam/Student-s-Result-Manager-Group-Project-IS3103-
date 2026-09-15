@@ -881,24 +881,16 @@
     const bonusDialog = document.getElementById('bonus-dialog');
     const bonusForm = document.getElementById('bonus-form');
     const bonusPoints = document.getElementById('bonus-points');
+    const apiUrl = '/api/students';
     let bonusStudentId = null;
     let editingId = null;
-    let students = loadStudents();
+    let students = [];
 
     function createId() {
       return window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
     }
 
-    function loadStudents() {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (error) {
-          localStorage.removeItem(storageKey);
-        }
-      }
-
+    function getDefaultStudents() {
       return [
         { id: createId(), name: 'Amina Yusuf', studentId: 'STU-001', marks: { mathematics: 94, english: 91, science: 92, history: 91 }, bonus: 0 },
         { id: createId(), name: 'Brian Otieno', studentId: 'STU-002', marks: { mathematics: 82, english: 80, science: 81, history: 81 }, bonus: 0 },
@@ -907,8 +899,39 @@
       ];
     }
 
-    function saveStudents() {
+    async function loadStudents() {
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('API unavailable');
+        const saved = await response.json();
+        localStorage.setItem(storageKey, JSON.stringify(saved));
+        return saved;
+      } catch (error) {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          try {
+            return JSON.parse(saved);
+          } catch (parseError) {
+            localStorage.removeItem(storageKey);
+          }
+        }
+
+        return getDefaultStudents();
+      }
+    }
+
+    async function saveStudents() {
       localStorage.setItem(storageKey, JSON.stringify(students));
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ students })
+        });
+        if (!response.ok) throw new Error('Could not save students');
+      } catch (error) {
+        console.warn('Saved locally. Start the Node server to sync records.', error);
+      }
     }
 
     function escapeHtml(value) {
@@ -972,7 +995,7 @@
       document.getElementById('save-button').textContent = 'Save result';
     }
 
-    resultForm.addEventListener('submit', event => {
+    resultForm.addEventListener('submit', async event => {
       event.preventDefault();
       const formData = new FormData(resultForm);
       const name = formData.get('student-name').trim();
@@ -991,7 +1014,7 @@
         students.unshift({ id: createId(), name, studentId, marks, bonus: 0 });
       }
 
-      saveStudents();
+      await saveStudents();
       resetForm();
       render();
     });
@@ -1000,7 +1023,7 @@
       setTimeout(resetForm, 0);
     });
 
-    resultsBody.addEventListener('click', event => {
+    resultsBody.addEventListener('click', async event => {
       const button = event.target.closest('button[data-action]');
       if (!button) return;
       const student = students.find(item => item.id === button.dataset.id);
@@ -1030,18 +1053,18 @@
         return;
       }
 
-      saveStudents();
+      await saveStudents();
       render();
     });
 
-    bonusForm.addEventListener('submit', event => {
+    bonusForm.addEventListener('submit', async event => {
       event.preventDefault();
       const amount = Number(bonusPoints.value);
       const student = students.find(item => item.id === bonusStudentId);
       if (!student || !Number.isFinite(amount) || amount <= 0) return;
       subjects.forEach(subject => { student.marks[subject] = Math.min(100, Number(student.marks[subject]) + amount); });
       student.bonus = Number(student.bonus || 0) + amount;
-      saveStudents();
+      await saveStudents();
       bonusDialog.close();
       bonusStudentId = null;
       render();
@@ -1053,7 +1076,10 @@
     });
 
     gradeFilter.addEventListener('change', render);
-    render();
+    loadStudents().then(loadedStudents => {
+      students = loadedStudents;
+      render();
+    });
   </script>
 </body>
 </html>
