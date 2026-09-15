@@ -4,7 +4,7 @@ const path = require('path');
 const { randomUUID } = require('crypto');
 
 const port = Number(process.env.PORT) || 3000;
-const dataDirectory = path.join(__dirname, 'data');
+const dataDirectory = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data');
 const dataFile = path.join(dataDirectory, 'students.json');
 const publicFile = path.join(__dirname, 'index.html');
 

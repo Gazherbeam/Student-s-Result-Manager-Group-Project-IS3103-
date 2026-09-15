@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Student Result Manager for recording marks and viewing grades.">
+  <meta name="result-api-url" content="">
   <title>Student Result Manager</title>
   <style>
     :root {
@@ -886,7 +887,8 @@
     const bonusDialog = document.getElementById('bonus-dialog');
     const bonusForm = document.getElementById('bonus-form');
     const bonusPoints = document.getElementById('bonus-points');
-    const apiUrl = '/api/students';
+    const configuredApiUrl = document.querySelector('meta[name="result-api-url"]')?.content.trim();
+    const apiUrl = configuredApiUrl ? `${configuredApiUrl.replace(/\/$/, '')}/api/students` : '/api/students';
     let bonusStudentId = null;
     let editingId = null;
     let students = [];
